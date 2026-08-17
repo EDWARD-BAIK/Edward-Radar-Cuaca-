@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>EDWARD - Radar Cuaca Indonesia</title>
     
-    <!-- Leaflet CSS -->
+    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     
@@ -224,6 +224,14 @@
             #legend { gap: 4px 10px; }
             #warning-bar i { font-size: 13px; }
         }
+
+        /* PERBAIKAN UI: Menggeser tombol zoom ke bawah agar tidak menutupi header EDWARD */
+        .leaflet-top {
+            margin-top: 75px !important;
+        }
+        .leaflet-left {
+            margin-left: 10px !important;
+        }
         
         .leaflet-control-attribution {
             background: rgba(0, 0, 0, 0.7) !important;
@@ -264,7 +272,6 @@
                 <span class="pulse-dot"></span>
                 <span style="font-size: 11px; color: #4fc3f7; font-weight: 600;">LIVE</span>
             </div>
-            <!-- Waktu sekarang (Berjalan real-time setiap detik) -->
             <div class="time" id="live-time">Memuat Jam...</div>
         </div>
     </div>
@@ -322,9 +329,6 @@
         (function() {
             'use strict';
 
-            
-            
-            
             const CONFIG = {
                 center: [-2.5, 118.0],
                 zoom: 5,
@@ -333,12 +337,10 @@
                 indonesiaBounds: [[-11.0, 95.0], [6.0, 141.0]]
             };
 
-            
             let map = null;
             let radarLayer = null;
             let isMapReady = false;
 
-           
             function initMap() {
                 try {
                     map = L.map('map', {
@@ -350,7 +352,6 @@
                         zoomControl: true,
                         attributionControl: true,
                     });
-
                     
                     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
                         attribution: '&copy; OpenStreetMap & Carto',
@@ -359,16 +360,12 @@
                     }).addTo(map);
 
                     isMapReady = true;
-
                     
                     loadRadar();
                     loadIndonesiaBoundary();
                     updateTime();
-
                     
                     setInterval(loadRadar, 180000); 
-                    
-                    
                     setInterval(updateTime, 1000);
 
                     setTimeout(() => {
@@ -380,10 +377,8 @@
                 }
             }
 
-            
             function loadRadar() {
                 if (!isMapReady || !map) return;
-
                 
                 const radarUrl = `https://api.rainviewer.com/public/weather-maps.json?_=${Date.now()}`;
 
@@ -396,17 +391,11 @@
                         if (!data.radar || !data.radar.past || data.radar.past.length === 0) {
                             throw new Error('Data radar kosong');
                         }
-
                         
                         const host = data.host; 
-                        
-                        
                         const latest = data.radar.past[data.radar.past.length - 1];
                         const tilePath = latest.path;
-                        
-                        
                         const tileUrl = `${host}${tilePath}/256/{z}/{x}/{y}/2/1_1.png`;
-
                         
                         const newRadarLayer = L.tileLayer(tileUrl, {
                             opacity: 0.70,
@@ -417,7 +406,6 @@
                         });
 
                         newRadarLayer.addTo(map);
-
                         
                         setTimeout(() => {
                             if (radarLayer && map.hasLayer(radarLayer)) {
@@ -425,7 +413,6 @@
                             }
                             radarLayer = newRadarLayer;
                         }, 1000);
-
                         
                         const date = new Date(latest.time * 1000);
                         const radarTimeStr = date.toLocaleTimeString('id-ID', { 
@@ -444,10 +431,8 @@
                     });
             }
 
-            
             function loadIndonesiaBoundary() {
                 if (!isMapReady || !map) return;
-                
                 
                 const geoUrl = 'https://raw.githubusercontent.com/amadeuszen/indonesia-geojson/main/idn_province.geojson';
 
@@ -479,7 +464,6 @@
                     .catch(err => console.warn('⚠️ Gagal load batas provinsi:', err));
             }
 
-            
             function updateTime() {
                 const now = new Date();
                 const el = document.getElementById('live-time');
@@ -491,7 +475,6 @@
                     }) + ' WIB';
                 }
             }
-
             
             window.refreshRadar = function() {
                 document.getElementById('warning-message').textContent = 'Memuat ulang data dari satelit...';
@@ -514,7 +497,6 @@
                 }
             };
 
-            
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', initMap);
             } else {
